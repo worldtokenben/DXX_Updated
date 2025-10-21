@@ -1,21 +1,46 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-const models = [
-  { name: "Ava", id: "1520975916090-3105956dac38" },
-  { name: "Mia", id: "1519340241574-2cec6aef0c01" },
-  { name: "Luna", id: "1492633423870-43d1cd2775eb" },
-  { name: "Ivy", id: "1520975916090-3105956dac38" },
-  { name: "Nora", id: "1519340241574-2cec6aef0c01" },
-  { name: "Eden", id: "1492633423870-43d1cd2775eb" },
-  { name: "Luna", id: "1492633423870-43d1cd2775eb" },
-  { name: "Ivy", id: "1520975916090-3105956dac38" },
-  { name: "Nora", id: "1519340241574-2cec6aef0c01" },
-  { name: "Eden", id: "1492633423870-43d1cd2775eb" },
-];
+// 🧩 Dynamically import all image formats from /src/assets/models
+const images = import.meta.glob(
+  "/src/assets/models/*.{jpg,jpeg,png,webp,gif,avif}",
+  { eager: true }
+);
 
 const Home = () => {
+  const [namesMap, setNamesMap] = useState({});
+  const [modelList, setModelList] = useState([]);
+
+  // 🗂️ Load names.txt and parse into { img-1: 'Kiran', img-2: 'Ava', ... }
+  useEffect(() => {
+    fetch("/src/assets/names.txt")
+      .then((res) => res.text())
+      .then((text) => {
+        const map = {};
+        text.split("\n").forEach((line) => {
+          const [key, value] = line.split("=");
+          if (key && value) map[key.trim()] = value.trim();
+        });
+        setNamesMap(map);
+      })
+      .catch(() => setNamesMap({}));
+  }, []);
+
+  // 🔄 After namesMap is ready, prepare model list dynamically
+  useEffect(() => {
+    const list = Object.entries(images).map(([path, module], index) => {
+      const fileName = path.split("/").pop()?.split(".")[0]; // e.g., 'img-1' or 'randomname'
+      const displayName = namesMap[fileName] || "Iva"; // fallback name
+      return {
+        name: displayName,
+        src: module.default,
+      };
+    });
+    setModelList(list);
+  }, [namesMap]);
+
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
@@ -36,6 +61,7 @@ const Home = () => {
         </div>
       </div>
 
+      {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
         <button className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50">
           All
@@ -51,16 +77,17 @@ const Home = () => {
         </button>
       </div>
 
+      {/* Image Grid */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-        {models.map((m, idx) => (
+        {modelList.map((m, idx) => (
           <div
-            key={`${m.name}-${idx}`}
+            key={idx}
             className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-lg"
           >
             <div className="relative">
               <img
                 className="h-64 w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                src={`https://images.unsplash.com/photo-${m.id}?q=80&w=1600&auto=format&fit=crop`}
+                src={m.src}
                 alt={m.name}
                 loading="lazy"
               />
