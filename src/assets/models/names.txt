@@ -1,6 +1,0 @@
-img-1=Kiran
-img-2=Mia
-img-3=Luna
-img-4=Ivy
-img-5=Nora
-
