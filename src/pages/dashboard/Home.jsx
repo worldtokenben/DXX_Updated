@@ -12,7 +12,7 @@ const Home = () => {
 
   // 🗂️ Load names.txt and parse into { img-1: 'Kiran', img-2: 'Ava', ... }
   useEffect(() => {
-    fetch("/src/assets/names.txt")
+    fetch("/names.txt")
       .then((res) => res.text())
       .then((text) => {
         const map = {};
